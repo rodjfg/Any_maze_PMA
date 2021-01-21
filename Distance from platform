@@ -419,4 +419,3 @@ write.xlsx(all_days_binned_dist, file=paste(mydir[r],'/distance_only_mouse',r,'.
 
 
 
-
