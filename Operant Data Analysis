@@ -282,7 +282,9 @@ library(STAR)
 library(openxlsx)
 
 
-excel <- loadWorkbook('C:/Users/floresgarciarj/Documents/Analysis For MEDPC/H_CUES.xlsx') # change to match your path
+directory='C:/Users/floresgarciarj/Documents/Analysis For MEDPC/'
+
+excel <- loadWorkbook(paste(directory,'H_CUES.xlsx',sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -516,6 +518,7 @@ for(i in 1:(length(all_pokes))){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
 }
+
 if(length(all_pokes)>length(list_of_duration_w[[j]])){
   all_pokes<-all_pokes[-false_logic[1]]
 }else if(length(all_pokes)<length(list_of_duration_w[[j]])){
@@ -1803,7 +1806,7 @@ stim_ll=0
 stim_ul=20
 
 j=1
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory, "mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_1, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
