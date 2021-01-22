@@ -281,8 +281,7 @@ library(codetools)
 library(STAR)
 library(openxlsx)
 
-
-directory='C:/Users/floresgarciarj/Documents/Analysis For MEDPC/'
+directory='C:/Users/awanyaima/Desktop/Analysis/'
 
 excel <- loadWorkbook(paste(directory,'H_CUES.xlsx',sep="")) # change to match your path
 # get sheet names
@@ -308,7 +307,7 @@ for (i in 1:length(sheet_names)){
 
 
 # load excel workbook
-excel <- loadWorkbook('C:/Users/floresgarciarj/Documents/Analysis For MEDPC/F_LIGHT_ON.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'F_LIGHT_ON.xlsx',sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -331,7 +330,7 @@ for (i in 1:length(sheet_list)){
 }
 
 # load excel workbook
-excel <- loadWorkbook('C:/Users/floresgarciarj/Documents/Analysis For MEDPC/L_RETRIEVALS.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'L_RETRIEVALS.xlsx',sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -356,7 +355,7 @@ for (i in 1:length(sheet_list)){
 
 
 # load excel workbook
-excel <- loadWorkbook('C:/Users/floresgarciarj/Documents/Analysis For MEDPC/R_LIGHT_OFF.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'Analysis/R_LIGHT_OFF.xlsx',sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -380,7 +379,7 @@ for (i in 1:length(sheet_list)){
 }
 
 # load excel workbook
-excel <- loadWorkbook('C:/Users/floresgarciarj/Documents/Analysis For MEDPC/P_TONE_CUE.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'P_TONE_CUE.xlsx',sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -404,7 +403,7 @@ for (i in 1:length(sheet_list)){
 }
 
 # load excel workbook
-excel <- loadWorkbook('C:/Users/floresgarciarj/Documents/Analysis For MEDPC/U_DURATION.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'U_DURATION.xlsx',sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -518,7 +517,6 @@ for(i in 1:(length(all_pokes))){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
 }
-
 if(length(all_pokes)>length(list_of_duration_w[[j]])){
   all_pokes<-all_pokes[-false_logic[1]]
 }else if(length(all_pokes)<length(list_of_duration_w[[j]])){
@@ -1655,7 +1653,7 @@ rates_frame<-rbind(
       m10_rates,
       m11_rates,
       m12_rates)
-write.xlsx(rates_frame, file='C:/Users/floresgarciarj/Documents/Analysis For MEDPC/rates_of_all_mice.xlsx') #******CHANGE BY ANIMAL**************###########
+write.xlsx(rates_frame, file=paste(directory,'rates_of_all_mice.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 
 rate_and_pokes<-data.frame(nrow=36,ncol=36)
@@ -1673,7 +1671,7 @@ m11_poke_n_rates,
 m12_poke_n_rates
 )
 
-write.xlsx(rate_and_pokes, file='C:/Users/floresgarciarj/Documents/Analysis For MEDPC/rate_and_poke_.xlsx') #******CHANGE BY ANIMAL**************###########
+write.xlsx(rate_and_pokes, file=paste(directory,'rate_and_poke_.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 duration_pokes<-rbind(mouse_1_duration,
 mouse_2_duration,
@@ -1690,7 +1688,7 @@ mouse_12_duration)
 duration_pokes<-cbind(duration_pokes,as.vector(duration_pokes[,1]+duration_pokes[,3]))
 colnames(duration_pokes)<-c("light_on","light_on_mean","retrieval","retrieval_mean","light_off","light_on_mean","light_on_sum")
 
-write.xlsx(duration_pokes, file='C:/Users/floresgarciarj/Documents/Analysis For MEDPC/duration_pokes.xlsx') #******CHANGE BY ANIMAL**************###########
+write.xlsx(duration_pokes, file=paste(directory,'duration_pokes.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 
 
@@ -1739,14 +1737,14 @@ for(j in 1:length(master_list)){
 master_bin_data_frame<-data.frame()
 master_bin_data_frame<-data.frame(do.call(cbind.na, master_bin))
 
-write.xlsx(master_bin_data_frame, file='C:/Users/floresgarciarj/Documents/Analysis For MEDPC/by_trial_raster_binned.xlsx') #******CHANGE BY ANIMAL**************###########
+write.xlsx(master_bin_data_frame, file=paste(directory,'by_trial_raster_binned.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 allone<-rbind(m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12)
-write.xlsx(allone, file='C:/Users/floresgarciarj/Documents/Analysis For MEDPC/by_mouse_binned.xlsx') #******CHANGE BY ANIMAL**************###########
+write.xlsx(allone, file=paste(directory,'by_mouse_binned.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 
 
-excel <- loadWorkbook('C:/Users/floresgarciarj/Documents/Analysis For MEDPC/B_TOTAL_COUNTS.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'B_TOTAL_COUNTS.xlsx',sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -1774,7 +1772,7 @@ row_names<-c("Sum_Correct_Incorrect","Correct Rsp","Incorrect Rsp","Rewards Pres
 rownames(master_counts)<-row_names
 column_names<-c(1:12)
 colnames(master_counts)<-column_names
-write.xlsx(master_counts, file='C:/Users/floresgarciarj/Documents/Analysis For MEDPC/master_counts.xlsx', row.names=TRUE) #******CHANGE BY ANIMAL**************###########
+write.xlsx(master_counts, file=paste(directory,'master_counts.xlsx',sep="", row.names=TRUE)) #******CHANGE BY ANIMAL**************###########
 
 
 ?write.xlsx
@@ -1799,14 +1797,14 @@ xlim_ul=60
 
 ### y axis parameters
 ylim_ll=0
-ylim_ul=20
+ylim_ul=30
 
 ###### gray zone parameters
 stim_ll=0
-stim_ul=20
+stim_ul=30
 
 j=1
-png(file=paste(directory, "mouse_", j,".png",sep=""),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_1, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1820,7 +1818,7 @@ dev.off()
 
 
 j=2
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_2,
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1834,7 +1832,7 @@ dev.off()
 
 
 j=3
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_3, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1850,7 +1848,7 @@ dev.off()
 
 
 j=4
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_4, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1863,7 +1861,7 @@ raster_plot(mouse_4,
 dev.off()  
 
 j=5
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_5, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1877,7 +1875,7 @@ dev.off()
 
 
 j=6
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_6, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1891,7 +1889,7 @@ dev.off()
 
 
 j=7
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_7, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1906,7 +1904,7 @@ dev.off()
 
 
 j=8
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png"),width=600, height=400)
 raster_plot(mouse_8, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1921,7 +1919,7 @@ dev.off()
 
 
 j=9
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_9, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1936,7 +1934,7 @@ dev.off()
 
 
 j=10
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_10, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1951,7 +1949,7 @@ dev.off()
 
 
 j=11
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_11, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1966,7 +1964,7 @@ dev.off()
 
 
 j=12
-png(file=paste("C:/Users/floresgarciarj/Documents/Analysis For MEDPC/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_12, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
