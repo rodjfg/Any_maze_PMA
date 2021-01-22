@@ -413,9 +413,3 @@ write.xlsx(all_days_by_trial_2999L, file=paste(mydir[r],'/All_days_distance_othe
 
 #distance only
 write.xlsx(all_days_binned_dist, file=paste(mydir[r],'/distance_only_mouse',r,'.xlsx', sep="")) #******CHANGE BY ANIMAL**************###########
-
-
-
-
-
-
