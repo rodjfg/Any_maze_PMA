@@ -512,7 +512,7 @@ j=1#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -616,7 +616,7 @@ j=2#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -715,7 +715,7 @@ j=5#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -811,7 +811,7 @@ j=6#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -912,7 +912,7 @@ j=9#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -1101,8 +1101,7 @@ write.xlsx(duration_pokes, file=paste(directory,'duration_pokes.xlsx',sep="")) #
 
 
 master_list<-list()
-?tryCatch
-try(
+
 for (i in 1:length(mouse_1)){
   master_vector<-c(mouse_1[[i]],
                    mouse_2[[i]],
@@ -1115,7 +1114,7 @@ for (i in 1:length(mouse_1)){
   master_list[[i]]<-master_vector
   
 }
-)
+
 
 
 vector_1<-seq(0:59)
