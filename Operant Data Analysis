@@ -15,7 +15,6 @@
 #RUN FUNCTIONS
 ###############################################################################################################
 
-
 raster_plot<-function (x, stimTimeCourse = NULL, colStim = "grey80", xlim, ylim,pch, xlab, ylab, main, ...){
   if (!is.repeatedTrain(x)) 
     x <- as.repeatedTrain(x)
@@ -483,7 +482,7 @@ rate_pre<-vector()
 rate_during<-vector()
 rate_post<-vector()
 
-for(j in 1:length(mouse_1)){
+for(j in 1:length(mouse_1)-1){
   for (i in 1:length(vector_1)){
     second_bin<-length(which(mouse_1[[j]]>= start_value+vector_1[i] & mouse_1[[j]]< start_value+vector_2[i]))
     time_count<-c(time_count,second_bin)
@@ -618,7 +617,7 @@ j=2#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -716,7 +715,7 @@ j=3#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -815,7 +814,7 @@ j=4#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -914,7 +913,7 @@ j=5#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -1010,7 +1009,7 @@ j=6#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -1110,7 +1109,7 @@ j=7#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -1206,7 +1205,7 @@ j=8#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -1304,7 +1303,7 @@ j=9#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -1496,7 +1495,7 @@ j=11#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -1587,7 +1586,7 @@ j=12#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -1700,8 +1699,7 @@ write.xlsx(duration_pokes, file='C:/Users/floresgarciarj/Documents/Analysis For 
 
 
 master_list<-list()
-?tryCatch
-try(
+
 for (i in 1:length(mouse_1)){
   master_vector<-c(mouse_1[[i]],
                    mouse_2[[i]],
@@ -1720,7 +1718,7 @@ for (i in 1:length(mouse_1)){
   master_list[[i]]<-master_vector
   
 }
-)
+
 
 
 vector_1<-seq(0:59)
