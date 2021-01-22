@@ -510,7 +510,7 @@ j=3#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -609,7 +609,7 @@ j=4#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -710,7 +710,7 @@ j=7#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -806,7 +806,7 @@ j=8#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -906,7 +906,7 @@ j=11#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
@@ -997,7 +997,7 @@ j=12#mouse number
 false_logic<-vector()
 value_holder<-vector()
 
-for(i in 1:(length(all_pokes))){
+for(i in 1:(length(all_pokes)-1)){
   if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
     value_holder<-i
     false_logic<-c(false_logic,value_holder)}
