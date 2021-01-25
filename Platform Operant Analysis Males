@@ -281,8 +281,9 @@ library(codetools)
 library(STAR)
 library(openxlsx)
 
+directory='C:/Users/awanyaima/Desktop/Analysis/'
 
-excel <- loadWorkbook('C:/Users/awanyaima/Desktop/Analysis/H_CUES.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'H_CUES.xlsx', sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -306,7 +307,7 @@ for (i in 1:length(sheet_names)){
 
 
 # load excel workbook
-excel <- loadWorkbook('C:/Users/awanyaima/Desktop/Analysis/F_LIGHT_ON.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'F_LIGHT_ON.xlsx', sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -329,7 +330,7 @@ for (i in 1:length(sheet_list)){
 }
 
 # load excel workbook
-excel <- loadWorkbook('C:/Users/awanyaima/Desktop/Analysis/L_RETRIEVALS.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'L_RETRIEVALS.xlsx', sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -354,7 +355,7 @@ for (i in 1:length(sheet_list)){
 
 
 # load excel workbook
-excel <- loadWorkbook('C:/Users/awanyaima/Desktop/Analysis/R_LIGHT_OFF.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'R_LIGHT_OFF.xlsx',sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -378,7 +379,7 @@ for (i in 1:length(sheet_list)){
 }
 
 # load excel workbook
-excel <- loadWorkbook('C:/Users/awanyaima/Desktop/Analysis/P_TONE_CUE.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'P_TONE_CUE.xlsx',sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -402,7 +403,7 @@ for (i in 1:length(sheet_list)){
 }
 
 # load excel workbook
-excel <- loadWorkbook('C:/Users/awanyaima/Desktop/Analysis/U_DURATION.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'U_DURATION.xlsx',sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -944,12 +945,12 @@ sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1])
 mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1])
 
 mouse_11_duration<-c(sum_duration_lighton,
-                    mean_duration_lighton,
-                    sum_duration_retrievals,
-                    mean_duration_retrievals,
-                    sum_duration_lightoff,
-                    mean_duration_lightoff
-                    
+                     mean_duration_lighton,
+                     sum_duration_retrievals,
+                     mean_duration_retrievals,
+                     sum_duration_lightoff,
+                     mean_duration_lightoff
+                     
 )
 
 rm(all_pokes)
@@ -1042,47 +1043,47 @@ sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1])
 mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1])
 
 mouse_12_duration<-c(sum_duration_lighton,
-                    mean_duration_lighton,
-                    sum_duration_retrievals,
-                    mean_duration_retrievals,
-                    sum_duration_lightoff,
-                    mean_duration_lightoff
-                    
+                     mean_duration_lighton,
+                     sum_duration_retrievals,
+                     mean_duration_retrievals,
+                     sum_duration_lightoff,
+                     mean_duration_lightoff
+                     
 )
 
 
 
 rates_frame<-rbind(
-      m3_rates,
-      m4_rates,
-      m7_rates,
-      m8_rates,
-      m11_rates,
-      m12_rates)
-write.xlsx(rates_frame, file='C:/Users/awanyaima/Desktop/Analysis/rates_of_all_mice.xlsx') #******CHANGE BY ANIMAL**************###########
+  m3_rates,
+  m4_rates,
+  m7_rates,
+  m8_rates,
+  m11_rates,
+  m12_rates)
+write.xlsx(rates_frame, file=paste(directory,'rates_of_all_mice.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 
 rate_and_pokes<-data.frame(nrow=36,ncol=36)
 rate_and_pokes<-cbind(m3_poke_n_rates,
-m4_poke_n_rates,
-m7_poke_n_rates,
-m8_poke_n_rates,
-m11_poke_n_rates,
-m12_poke_n_rates
+                      m4_poke_n_rates,
+                      m7_poke_n_rates,
+                      m8_poke_n_rates,
+                      m11_poke_n_rates,
+                      m12_poke_n_rates
 )
 
-write.xlsx(rate_and_pokes, file='C:/Users/awanyaima/Desktop/Analysis/rate_and_poke_.xlsx') #******CHANGE BY ANIMAL**************###########
+write.xlsx(rate_and_pokes, file=paste(directory,'rate_and_poke_.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 duration_pokes<-rbind(mouse_3_duration,
-mouse_4_duration,
-mouse_7_duration,
-mouse_8_duration,
-mouse_11_duration,
-mouse_12_duration)
+                      mouse_4_duration,
+                      mouse_7_duration,
+                      mouse_8_duration,
+                      mouse_11_duration,
+                      mouse_12_duration)
 duration_pokes<-cbind(duration_pokes,as.vector(duration_pokes[,1]+duration_pokes[,3]))
 colnames(duration_pokes)<-c("light_on","light_on_mean","retrieval","retrieval_mean","light_off","light_on_mean","light_on_sum")
 
-write.xlsx(duration_pokes, file='C:/Users/awanyaima/Desktop/Analysis/duration_pokes.xlsx') #******CHANGE BY ANIMAL**************###########
+write.xlsx(duration_pokes, file=paste(directory,'duration_pokes.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 
 
@@ -1094,18 +1095,18 @@ write.xlsx(duration_pokes, file='C:/Users/awanyaima/Desktop/Analysis/duration_po
 master_list<-list()
 ?tryCatch
 try(
-for (i in 1:length(mouse_3)){
-  master_vector<-c(mouse_3[[i]],
-                   mouse_4[[i]],
-                   mouse_7[[i]],
-                   mouse_8[[i]],
-                   mouse_11[[i]],
-                   mouse_12[[i]] )
-  
-  master_vector<-sort(master_vector, decreasing=FALSE)
-  master_list[[i]]<-master_vector
-  
-}
+  for (i in 1:length(mouse_3)){
+    master_vector<-c(mouse_3[[i]],
+                     mouse_4[[i]],
+                     mouse_7[[i]],
+                     mouse_8[[i]],
+                     mouse_11[[i]],
+                     mouse_12[[i]] )
+    
+    master_vector<-sort(master_vector, decreasing=FALSE)
+    master_list[[i]]<-master_vector
+    
+  }
 )
 
 
@@ -1125,14 +1126,14 @@ for(j in 1:length(master_list)){
 master_bin_data_frame<-data.frame()
 master_bin_data_frame<-data.frame(do.call(cbind.na, master_bin))
 
-write.xlsx(master_bin_data_frame, file='C:/Users/awanyaima/Desktop/Analysis/by_trial_raster_binned.xlsx') #******CHANGE BY ANIMAL**************###########
+write.xlsx(master_bin_data_frame, file=paste(directory,'by_trial_raster_binned.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 allone<-rbind(m3,m4,m7,m8,m11,m12)
-write.xlsx(allone, file='C:/Users/awanyaima/Desktop/Analysis/by_mouse_binned.xlsx') #******CHANGE BY ANIMAL**************###########
+write.xlsx(allone, file=paste(directory,'by_mouse_binned.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 
 
-excel <- loadWorkbook('C:/Users/awanyaima/Desktop/Analysis/B_TOTAL_COUNTS.xlsx') # change to match your path
+excel <- loadWorkbook(paste(directory,'B_TOTAL_COUNTS.xlsx',sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
@@ -1160,7 +1161,7 @@ row_names<-c("Sum_Correct_Incorrect","Correct Rsp","Incorrect Rsp","Rewards Pres
 rownames(master_counts)<-row_names
 column_names<-c(1:12)
 colnames(master_counts)<-column_names
-write.xlsx(master_counts, file='C:/Users/awanyaima/Desktop/Analysis/master_counts.xlsx', row.names=TRUE) #******CHANGE BY ANIMAL**************###########
+write.xlsx(master_counts, file=paste(directory,'master_counts.xlsx',sep="", row.names=TRUE)) #******CHANGE BY ANIMAL**************###########
 
 
 ?write.xlsx
@@ -1188,7 +1189,7 @@ stim_ul=30
 
 
 j=3
-png(file=paste("C:/Users/awanyaima/Desktop/Analysis/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_3, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1204,7 +1205,7 @@ dev.off()
 
 
 j=4
-png(file=paste("C:/Users/awanyaima/Desktop/Analysis/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_4, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1219,7 +1220,7 @@ dev.off()
 
 
 j=7
-png(file=paste("C:/Users/awanyaima/Desktop/Analysis/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_7, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1234,7 +1235,7 @@ dev.off()
 
 
 j=8
-png(file=paste("C:/Users/awanyaima/Desktop/Analysis/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_8, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1251,7 +1252,7 @@ dev.off()
 
 
 j=11
-png(file=paste("C:/Users/awanyaima/Desktop/Analysis/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_11, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1266,7 +1267,7 @@ dev.off()
 
 
 j=12
-png(file=paste("C:/Users/awanyaima/Desktop/Analysis/mouse_", j,".png"),width=600, height=400)
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
 raster_plot(mouse_12, 
             stimTimeCourse = c(stim_ll,stim_ul), 
             colStim = "grey80",
@@ -1282,9 +1283,9 @@ dev.off()
 #value_holder<-vector()
 
 #for(i in 1:(length(all_pokes))){
- # if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
- #   value_holder<-i
-  #  false_logic<-c(false_logic,value_holder)}
+# if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+#   value_holder<-i
+#  false_logic<-c(false_logic,value_holder)}
 #}
 #if(length(all_pokes)>length(list_of_duration_w[[j]])){
 #  all_pokes<-all_pokes[-false_logic[1]]
@@ -1293,5 +1294,3 @@ dev.off()
 
 
 #FIX METHOD
-
-
