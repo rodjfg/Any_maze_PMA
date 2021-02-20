@@ -45,13 +45,6 @@ raster_plot<-function (x, stimTimeCourse = NULL, colStim = "grey80", xlim, ylim,
 }
 
 
-
-
-
-
-
-
-
 ###############################################################################################################
 #RUN FUNCTIONS
 ###############################################################################################################
@@ -282,12 +275,19 @@ library(STAR)
 library(openxlsx)
 
 
+rm(directory)
+
+
+
+
 stage<-c("30","60")
 stage_n=1
-day_v<- c("1:12")
+day_v<- c("1","2","3","4","5","6","7","8","9","10","11","12")
+#when you do C("1:12") the output you get is ("1:12") rather than the sequece 1,2,3,4,... which is what you intended- toget thelatter you remove quotations
 day=1
-directory=paste('Z:/Projects/NAcc Project/Platform Avoidance/Naive Cohort 1 sucrose as reinforcer/Males LCD Analysis/LC',stage[stage_n],'D',day[day_v],".male",sep="")
-
+directory=paste('M:/Projects/NAcc Project/Platform Avoidance/Naive Cohort 1 sucrose as reinforcer/Males LCD Analysis/LC',stage[stage_n],'D',day_v[day],".male/",sep="")
+#here you had day[day_v] when you needed to have day_v which refers to the vector of 12 numbers and day is the index so you needed day_v[day] instead
+#lastly, my shared drive begins with M yours may start with Z. Just make sure you are using the right one.You may need to change it. 
 excel <- loadWorkbook(paste(directory,'H_CUES.xlsx', sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
