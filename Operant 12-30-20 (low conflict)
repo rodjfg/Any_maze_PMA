@@ -1,0 +1,2040 @@
+#options(repos="https://CRAN.R-project.org")
+#install.packages("gdata")
+#install.packages("readxl")
+#install.packages("survival")
+#install.packages("mgcv")
+#install.packages("nlme")
+#install.packages("R2HTML")
+#install.packages("gss")
+#install.packages("codetools")
+#install.packages("STAR")
+#install.packages("openxlsx")
+#install.packages("R2HTML")
+
+###############################################################################################################
+#RUN FUNCTIONS
+###############################################################################################################
+
+
+raster_plot<-function (x, stimTimeCourse = NULL, colStim = "grey80", xlim, ylim,pch, xlab, ylab, main, ...){
+  if (!is.repeatedTrain(x)) 
+    x <- as.repeatedTrain(x)
+  nbTrains <- length(x)
+  if (missing(xlim)) 
+    xlim <- c(0, ceiling(max(sapply(x, max))))
+  if (missing(xlab)) 
+    xlab <- "Time (s)"
+  if (missing(ylab)) 
+    ylab <- "trial"
+  if (missing(main)) 
+    main <- paste(deparse(substitute(x)), "raster")
+  if (missing(pch)) 
+    pch <- ifelse(nbTrains <= 20, "|", ".")
+  oldpar <- par(mar = c(5, 4, 2, 1))
+  on.exit(par(oldpar))
+  acquisitionDuration <- max(xlim)
+  plot(c(0, acquisitionDuration), c(0, nbTrains + 1), type = "n", 
+       xlab = xlab, ylab = ylab, xlim = xlim, ylim = ylim, bty = "n", main = main, ...)
+  if (!is.null(stimTimeCourse)) {
+    rect(stimTimeCourse[1], 0.1, stimTimeCourse[2], nbTrains + 
+           0.9, col = colStim, lty = 0)
+  }
+  invisible(sapply(1:nbTrains, function(idx) points(x[[idx]],numeric(length(x[[idx]])) + idx, pch = pch)))
+  axis(10, at = -15:nbTrains)
+  axis(1)
+}
+
+
+
+
+
+
+
+
+
+###############################################################################################################
+#RUN FUNCTIONS
+###############################################################################################################
+cbind.na <- function (..., deparse.level = 1) 
+{
+  na <- nargs() - (!missing(deparse.level))    
+  deparse.level <- as.integer(deparse.level)
+  stopifnot(0 <= deparse.level, deparse.level <= 2)
+  argl <- list(...)   
+  while (na > 0 && is.null(argl[[na]])) {
+    argl <- argl[-na]
+    na <- na - 1
+  }
+  if (na == 0) 
+    return(NULL)
+  if (na == 1) {         
+    if (isS4(..1)) 
+      return(cbind2(..1))
+    else return(matrix(...))  ##.Internal(cbind(deparse.level, ...)))
+  }
+  if (deparse.level) {       
+    symarg <- as.list(sys.call()[-1L])[1L:na]
+    Nms <- function(i) {
+      if (is.null(r <- names(symarg[i])) || r == "") {
+        if (is.symbol(r <- symarg[[i]]) || deparse.level == 
+            2) 
+          deparse(r)
+      }
+      else r
+    }
+  }   
+  ## deactivated, otherwise no fill in with two arguments
+  if (na == 0) {
+    r <- argl[[2]]
+    fix.na <- FALSE
+  }
+  else {
+    nrs <- unname(lapply(argl, nrow))
+    iV <- sapply(nrs, is.null)
+    fix.na <- identical(nrs[(na - 1):na], list(NULL, NULL))
+    ## deactivated, otherwise data will be recycled
+    #if (fix.na) {
+    #    nr <- max(if (all(iV)) sapply(argl, length) else unlist(nrs[!iV]))
+    #    argl[[na]] <- cbind(rep(argl[[na]], length.out = nr), 
+    #        deparse.level = 0)
+    #}       
+    if (deparse.level) {
+      if (fix.na) 
+        fix.na <- !is.null(Nna <- Nms(na))
+      if (!is.null(nmi <- names(argl))) 
+        iV <- iV & (nmi == "")
+      ii <- if (fix.na) 
+        2:(na - 1)
+      else 2:na
+      if (any(iV[ii])) {
+        for (i in ii[iV[ii]]) if (!is.null(nmi <- Nms(i))) 
+          names(argl)[i] <- nmi
+      }
+    }
+    
+    ## filling with NA's to maximum occuring nrows
+    nRow <- as.numeric(sapply(argl, function(x) NROW(x)))
+    maxRow <- max(nRow, na.rm = TRUE)  
+    argl <- lapply(argl, function(x)  if (is.null(nrow(x))) c(x, rep(NA, maxRow - length(x)))
+                   else rbind.na(x, matrix(, maxRow - nrow(x), ncol(x))))
+    r <- do.call(cbind, c(argl[-1L], list(deparse.level = deparse.level)))
+  }
+  d2 <- dim(r)
+  r <- cbind2(argl[[1]], r)
+  if (deparse.level == 0) 
+    return(r)
+  ism1 <- !is.null(d1 <- dim(..1)) && length(d1) == 2L
+  ism2 <- !is.null(d2) && length(d2) == 2L && !fix.na
+  if (ism1 && ism2) 
+    return(r)
+  Ncol <- function(x) {
+    d <- dim(x)
+    if (length(d) == 2L) 
+      d[2L]
+    else as.integer(length(x) > 0L)
+  }
+  nn1 <- !is.null(N1 <- if ((l1 <- Ncol(..1)) && !ism1) Nms(1))
+  nn2 <- !is.null(N2 <- if (na == 2 && Ncol(..2) && !ism2) Nms(2))
+  if (nn1 || nn2 || fix.na) {
+    if (is.null(colnames(r))) 
+      colnames(r) <- rep.int("", ncol(r))
+    setN <- function(i, nams) colnames(r)[i] <<- if (is.null(nams)) 
+      ""
+    else nams
+    if (nn1) 
+      setN(1, N1)
+    if (nn2) 
+      setN(1 + l1, N2)
+    if (fix.na) 
+      setN(ncol(r), Nna)
+  }
+  r
+}
+
+rbind.na <- function (..., deparse.level = 1) 
+{
+  na <- nargs() - (!missing(deparse.level))
+  deparse.level <- as.integer(deparse.level)
+  stopifnot(0 <= deparse.level, deparse.level <= 2)
+  argl <- list(...)
+  while (na > 0 && is.null(argl[[na]])) {
+    argl <- argl[-na]
+    na <- na - 1
+  }    
+  if (na == 0) 
+    return(NULL)
+  if (na == 1) {
+    if (isS4(..1)) 
+      return(rbind2(..1))
+    else return(matrix(..., nrow = 1)) ##.Internal(rbind(deparse.level, ...)))
+  }
+  if (deparse.level) {
+    symarg <- as.list(sys.call()[-1L])[1L:na]
+    Nms <- function(i) {
+      if (is.null(r <- names(symarg[i])) || r == "") {
+        if (is.symbol(r <- symarg[[i]]) || deparse.level == 
+            2) 
+          deparse(r)
+      }
+      else r
+    }
+  }
+  
+  ## deactivated, otherwise no fill in with two arguments
+  if (na == 0) {
+    r <- argl[[2]]
+    fix.na <- FALSE
+  }
+  else {
+    nrs <- unname(lapply(argl, ncol))
+    iV <- sapply(nrs, is.null)
+    fix.na <- identical(nrs[(na - 1):na], list(NULL, NULL))
+    ## deactivated, otherwise data will be recycled
+    #if (fix.na) {
+    #    nr <- max(if (all(iV)) sapply(argl, length) else unlist(nrs[!iV]))
+    #    argl[[na]] <- rbind(rep(argl[[na]], length.out = nr), 
+    #        deparse.level = 0)
+    #}
+    if (deparse.level) {
+      if (fix.na) 
+        fix.na <- !is.null(Nna <- Nms(na))
+      if (!is.null(nmi <- names(argl))) 
+        iV <- iV & (nmi == "")
+      ii <- if (fix.na) 
+        2:(na - 1)
+      else 2:na
+      if (any(iV[ii])) {
+        for (i in ii[iV[ii]]) if (!is.null(nmi <- Nms(i))) 
+          names(argl)[i] <- nmi
+      }
+    }
+    
+    ## filling with NA's to maximum occuring ncols
+    nCol <- as.numeric(sapply(argl, function(x) if (is.null(ncol(x))) length(x)
+                              else ncol(x)))
+    maxCol <- max(nCol, na.rm = TRUE)  
+    argl <- lapply(argl, function(x)  if (is.null(ncol(x))) c(x, rep(NA, maxCol - length(x)))
+                   else cbind(x, matrix(, nrow(x), maxCol - ncol(x))))  
+    
+    ## create a common name vector from the
+    ## column names of all 'argl' items
+    namesVEC <- rep(NA, maxCol)  
+    for (i in 1:length(argl)) {
+      CN <- colnames(argl[[i]])          
+      m <- !(CN %in% namesVEC)
+      namesVEC[m] <- CN[m]          
+    }  
+    
+    ## make all column names from common 'namesVEC'
+    for (j in 1:length(argl)) {    
+      if (!is.null(ncol(argl[[j]]))) colnames(argl[[j]]) <- namesVEC
+    }
+    
+    r <- do.call(rbind, c(argl[-1L], list(deparse.level = deparse.level)))        
+  }
+  
+  d2 <- dim(r)
+  
+  ## make all column names from common 'namesVEC'
+  colnames(r) <- colnames(argl[[1]])
+  
+  r <- rbind2(argl[[1]], r)
+  
+  if (deparse.level == 0) 
+    return(r)
+  ism1 <- !is.null(d1 <- dim(..1)) && length(d1) == 2L
+  ism2 <- !is.null(d2) && length(d2) == 2L && !fix.na
+  if (ism1 && ism2) 
+    return(r)
+  Nrow <- function(x) {
+    d <- dim(x)
+    if (length(d) == 2L) 
+      d[1L]
+    else as.integer(length(x) > 0L)
+  }
+  nn1 <- !is.null(N1 <- if ((l1 <- Nrow(..1)) && !ism1) Nms(1))
+  nn2 <- !is.null(N2 <- if (na == 2 && Nrow(..2) && !ism2) Nms(2))
+  if (nn1 || nn2 || fix.na) {
+    if (is.null(rownames(r))) 
+      rownames(r) <- rep.int("", nrow(r))
+    setN <- function(i, nams) rownames(r)[i] <<- if (is.null(nams)) 
+      ""
+    else nams
+    if (nn1) 
+      setN(1, N1)
+    if (nn2) 
+      setN(1 + l1, N2)
+    if (fix.na) 
+      setN(nrow(r), Nna)
+  }
+  r
+}
+
+library(gdata)
+library(readxl)
+library(survival)
+library(mgcv)
+library(nlme)
+library(R2HTML)
+library(gss)
+library(codetools)
+library(STAR)
+library(openxlsx)
+
+stage<-c("30","60")
+stage_n=1
+day_v<- c("7","8","9","10","11","12","13","14","15","16","17","18")
+day=1
+day_x<- c("1","2","3","4","5","6")
+dayx=1
+
+directory=paste('Z:/Projects/NAcc Project/Platform Avoidance/Naive Cohort 2 sucrose as reinforcer/Cohort II sucrose PMA/D',day_v[day],'Low Con ITI',stage[stage_n],'D',day_x[dayx],"/", sep="")
+#Z:\Projects\NAcc Project\Platform Avoidance\Naive Cohort 2 sucrose as reinforcer\Cohort II sucrose PMA\D7 Low Con ITI 30 D1
+
+excel <- loadWorkbook(paste(directory,'H_CUES.xlsx',sep="")) # change to match your path
+# get sheet names
+sheet_names <- names(excel)
+names(sheet_names) <- sheet_names
+# put sheets into a list of data frames
+sheet_list <- lapply(sheet_names, function(.sheet){readWorkbook(excel, .sheet)})
+# limit sheet_list to sheets with at least 1 dimension 
+sheet_list2 <- sheet_list[sapply(sheet_list, function(x) dim(x)[1]) > 0]
+
+list_of_cues_w<-list()
+for (i in 1:length(sheet_names)){
+  df1<-as.data.frame(sheet_list2[[i]])
+  df1<-df1[-(1:3),]
+  df1<-df1[,3]
+  x<-as.numeric(as.matrix(df1))
+  # creating matrix 
+  length(x)
+  m <- matrix(x, nrow = length(x), byrow = FALSE,) 
+  
+  list_of_cues_w[[i]]<-m
+}
+
+
+# load excel workbook
+excel <- loadWorkbook(paste(directory,'H_CUES.xlsx', sep="")) # change to match your path
+# get sheet names
+sheet_names <- names(excel)
+names(sheet_names) <- sheet_names
+# put sheets into a list of data frames
+sheet_list <- lapply(sheet_names, function(.sheet){readWorkbook(excel, .sheet)})
+# limit sheet_list to sheets with at least 1 dimension 
+sheet_list2 <- sheet_list[sapply(sheet_list, function(x) dim(x)[1]) > 0]
+
+list_of_lighton_w<-list()
+for (i in 1:length(sheet_list)){
+  df1<-as.data.frame(sheet_list2[[i]])
+  df1<-df1[-(1:3),]
+  df1<-df1[,3]
+  x<-as.numeric(as.matrix(df1))
+  # creating matrix 
+  length(x)
+  m <- matrix(x, nrow = length(x), byrow = FALSE,) 
+  
+  list_of_lighton_w[[i]]<-m
+}
+
+# load excel workbook
+excel <- loadWorkbook(paste(directory,'L_RETRIEVALS.xlsx', sep="")) # change to match your path
+# get sheet names
+sheet_names <- names(excel)
+names(sheet_names) <- sheet_names
+# put sheets into a list of data frames
+sheet_list <- lapply(sheet_names, function(.sheet){readWorkbook(excel, .sheet)})
+# limit sheet_list to sheets with at least 1 dimension 
+sheet_list2 <- sheet_list[sapply(sheet_list, function(x) dim(x)[1]) > 0]
+
+
+list_of_retrievals_w<-list()
+for (i in 1:length(sheet_list)){
+  df1<-as.data.frame(sheet_list2[[i]])
+  df1<-df1[-(1:3),]
+  df1<-df1[,3]
+  x<-as.numeric(as.matrix(df1))
+  # creating matrix 
+  length(x)
+  m <- matrix(x, nrow = length(x), byrow = FALSE,) 
+  
+  list_of_retrievals_w[[i]]<-m
+}
+
+
+# load excel workbook
+excel <- loadWorkbook(paste(directory,'R_LIGHT_OFF.xlsx', sep="")) # change to match your path
+# get sheet names
+sheet_names <- names(excel)
+names(sheet_names) <- sheet_names
+# put sheets into a list of data frames
+sheet_list <- lapply(sheet_names, function(.sheet){readWorkbook(excel, .sheet)})
+# limit sheet_list to sheets with at least 1 dimension 
+sheet_list2 <- sheet_list[sapply(sheet_list, function(x) dim(x)[1]) > 0]
+
+
+list_of_lightoff_w<-list()
+for (i in 1:length(sheet_list)){
+  df1<-as.data.frame(sheet_list2[[i]])
+  df1<-df1[-(1:3),]
+  df1<-df1[,3]
+  x<-as.numeric(as.matrix(df1))
+  # creating matrix 
+  length(x)
+  m <- matrix(x, nrow = length(x), byrow = FALSE,) 
+  
+  list_of_lightoff_w[[i]]<-m
+}
+
+# load excel workbook
+excel <- loadWorkbook(paste(directory,'P_TONE_CUE.xlsx',sep="")) # change to match your path
+# get sheet names
+sheet_names <- names(excel)
+names(sheet_names) <- sheet_names
+# put sheets into a list of data frames
+sheet_list <- lapply(sheet_names, function(.sheet){readWorkbook(excel, .sheet)})
+# limit sheet_list to sheets with at least 1 dimension 
+sheet_list2 <- sheet_list[sapply(sheet_list, function(x) dim(x)[1]) > 0]
+
+
+list_of_tonecue_w<-list()
+for (i in 1:length(sheet_list)){
+  df1<-as.data.frame(sheet_list2[[i]])
+  df1<-df1[-(1:3),]
+  df1<-df1[,3]
+  x<-as.numeric(as.matrix(df1))
+  # creating matrix 
+  length(x)
+  m <- matrix(x, nrow = length(x), byrow = FALSE,) 
+  
+  list_of_tonecue_w[[i]]<-m
+}
+
+# load excel workbook
+excel <- loadWorkbook(paste(directory,'U_DURATION.xlsx',sep="")) # change to match your path
+# get sheet names
+sheet_names <- names(excel)
+names(sheet_names) <- sheet_names
+# put sheets into a list of data frames
+sheet_list <- lapply(sheet_names, function(.sheet){readWorkbook(excel, .sheet)})
+# limit sheet_list to sheets with at least 1 dimension 
+sheet_list2 <- sheet_list[sapply(sheet_list, function(x) dim(x)[1]) > 0]
+
+
+list_of_duration_w<-list()
+for (i in 1:length(sheet_list)){
+  df1<-as.data.frame(sheet_list2[[i]])
+  df1<-df1[-(1:3),]
+  df1<-df1[,3]
+  x<-as.numeric(as.matrix(df1))
+  # creating matrix 
+  length(x)
+  m <- matrix(x, nrow = length(x), byrow = FALSE,) 
+  list_of_duration_w[[i]]<-m
+}
+
+list_of_cues_w
+list_of_lighton_w
+list_of_retrievals_w
+list_of_lightoff_w
+list_of_tonecue_w
+list_of_duration_w
+
+rate_off<-vector()
+rate_on<-vector()
+for (j in 1:12){
+rate_off[j]<-length(list_of_lightoff_w[[j]])/34.5
+rate_on[j]<-(length(list_of_lighton_w[[j]])+length(list_of_retrievals_w[j]))/10
+}
+rates_on_off<-cbind(rate_off,rate_on)
+
+desired_length <- 12 # or whatever length you want For use in the absence of these frames like in passive or operant training
+list_of_tonecue_w <- vector(mode = "list", length = desired_length) # or whatever length you want For use in the absence of these frames like in passive or operant training
+#list_of_retrievals_w <- vector(mode = "list", length = desired_length) # or whatever length you want For use in the absence of these frames like in passive or operant training
+
+
+lower_limit<- 15 # -15 may use different depending on the desired window  should add to -60
+upper_limit<- 45 # +45
+start_value<- -15 #value to start relative to cue onset. -15 or -30 or -20
+
+window_length=lower_limit+upper_limit
+
+no_trials<-nrow(list_of_cues_w[[1]])
+minutes_pre<-(no_trials*(lower_limit))/60
+minutes_during<-(no_trials*(upper_limit-lower_limit))/60
+minutes_post<-(no_trials*(lower_limit))/60
+
+
+vector_1<-seq(0:(window_length-1)) #may change depending on window
+vector_1<-vector_1-1
+vector_2<-seq(0:(window_length-1))
+
+
+
+
+j=1#mouse number
+
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+mouse_1<-list()
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+    relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+    allpokes<-all_pokes[relative_to_cue_indx]
+    allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+    mouse_1[[i]]<-allpokes
+  
+}
+
+
+time_count<-0
+mouse_1_bin<-list()
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_1)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_1[[j]]>= start_value+vector_1[i] & mouse_1[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_1_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m1_poke_n_rates<-rbind(pokes_by_trial,rates)
+m1_rates<-rates
+
+
+mouse_1_bin_data_frame<-data.frame()
+mouse_1_bin_data_frame<-(do.call(cbind.na, mouse_1_bin))
+t(mouse_1_bin_data_frame)
+tsum<-as.data.frame(t(mouse_1_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m1<-data.frame(do.call(cbind.na, aggreg))
+
+j=1#mouse number
+
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes))){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+
+
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+tail(all_pokes)
+tail(list_of_duration_w[[j]])
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+
+
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+mouse_1_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+)
+
+
+j=2#mouse number
+
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+mouse_2<-list()
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_2[[i]]<-allpokes
+}
+
+
+
+
+time_count<-0
+mouse_2_bin<-list()
+
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_2)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_2[[j]]>= start_value+vector_1[i] & mouse_2[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_2_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m2_poke_n_rates<-rbind(pokes_by_trial,rates)
+m2_rates<-rates
+
+
+
+mouse_2_bin_data_frame<-data.frame()
+mouse_2_bin_data_frame<-(do.call(cbind.na, mouse_2_bin))
+tsum<-as.data.frame(t(mouse_2_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m2<-data.frame(do.call(cbind.na, aggreg))
+
+j=2#mouse number
+
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes))){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+if(length(false_logic)==0 & length(all_pokes)>length(list_of_duration_w[[j]])){false_logic<-length(all_pokes)}
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+
+vector_of_indices<-vector()
+
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+mouse_2_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+                    
+)
+
+
+
+j=3#mouse number
+
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+mouse_3<-list()
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_3[[i]]<-allpokes
+}
+
+
+time_count<-0
+mouse_3_bin<-list()
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_3)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_3[[j]]>= start_value+vector_1[i] & mouse_3[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_3_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m3_poke_n_rates<-rbind(pokes_by_trial,rates)
+m3_rates<-rates
+
+
+mouse_3_bin_data_frame<-data.frame()
+mouse_3_bin_data_frame<-(do.call(cbind.na, mouse_3_bin))
+tsum<-as.data.frame(t(mouse_3_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m3<-data.frame(do.call(cbind.na, aggreg))
+
+j=3#mouse number
+
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes))){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+
+if(length(false_logic)==0 & length(all_pokes)>length(list_of_duration_w[[j]])){false_logic<-length(all_pokes)}
+
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+vector_of_indices<-vector()
+
+
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind[1]
+}
+
+
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+mouse_3_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+                    
+)
+
+
+j=4#mouse number
+mouse_4<-list()
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_4[[i]]<-allpokes
+}
+
+time_count<-0
+mouse_4_bin<-list()
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_4)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_4[[j]]>= start_value+vector_1[i] & mouse_4[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_4_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m4_poke_n_rates<-rbind(pokes_by_trial,rates)
+m4_rates<-rates
+
+
+mouse_4_bin_data_frame<-data.frame()
+mouse_4_bin_data_frame<-(do.call(cbind.na, mouse_4_bin))
+tsum<-as.data.frame(t(mouse_4_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m4<-data.frame(do.call(cbind.na, aggreg))
+
+j=4#mouse number
+
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes))){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+
+if(length(false_logic)==0 & length(all_pokes)>length(list_of_duration_w[[j]])){false_logic<-length(all_pokes)}
+
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+vector_of_indices<-vector()
+
+
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+mouse_4_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+                    
+)
+
+
+
+j=5#mouse number
+
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+mouse_5<-list()
+
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_5[[i]]<-allpokes
+}
+
+
+time_count<-0
+mouse_5_bin<-list()
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_5)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_5[[j]]>= start_value+vector_1[i] & mouse_5[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_5_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m5_poke_n_rates<-rbind(pokes_by_trial,rates)
+m5_rates<-rates
+
+
+mouse_5_bin_data_frame<-data.frame()
+mouse_5_bin_data_frame<-(do.call(cbind.na, mouse_5_bin))
+tsum<-as.data.frame(t(mouse_5_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m5<-data.frame(do.call(cbind.na, aggreg))
+
+j=5#mouse number
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes))){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+
+if(length(false_logic)==0 & length(all_pokes)>length(list_of_duration_w[[j]])){false_logic<-length(all_pokes)}
+
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+mouse_5_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+                    
+)
+
+
+j=6#mouse number
+
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+mouse_6<-list()
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_6[[i]]<-allpokes
+}
+
+time_count<-0
+mouse_6_bin<-list()
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_6)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_6[[j]]>= start_value+vector_1[i] & mouse_6[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_6_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m6_poke_n_rates<-rbind(pokes_by_trial,rates)
+m6_rates<-rates
+
+
+mouse_6_bin_data_frame<-data.frame()
+mouse_6_bin_data_frame<-(do.call(cbind.na, mouse_6_bin))
+tsum<-as.data.frame(t(mouse_6_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m6<-data.frame(do.call(cbind.na, aggreg))
+
+j=6#mouse number
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes))){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+
+if(length(false_logic)==0 & length(all_pokes)>length(list_of_duration_w[[j]])){false_logic<-length(all_pokes)}
+
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+
+
+
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+mouse_6_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+                    
+)
+
+
+
+j=7#mouse number
+
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+mouse_7<-list()
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_7[[i]]<-allpokes
+}
+
+
+time_count<-0
+mouse_7_bin<-list()
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_7)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_7[[j]]>= start_value+vector_1[i] & mouse_7[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_7_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m7_poke_n_rates<-rbind(pokes_by_trial,rates)
+m7_rates<-rates
+
+
+mouse_7_bin_data_frame<-data.frame()
+mouse_7_bin_data_frame<-(do.call(cbind.na, mouse_7_bin))
+tsum<-as.data.frame(t(mouse_7_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m7<-data.frame(do.call(cbind.na, aggreg))
+
+j=7#mouse number
+
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes))){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+
+if(length(false_logic)==0 & length(all_pokes)>length(list_of_duration_w[[j]])){false_logic<-length(all_pokes)}
+
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+mouse_7_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+                    
+)
+
+
+
+j=8#mouse number
+
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+mouse_8<-list()
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_8[[i]]<-allpokes
+}
+
+
+time_count<-0
+mouse_8_bin<-list()
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_8)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_8[[j]]>= start_value+vector_1[i] & mouse_8[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_8_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m8_poke_n_rates<-rbind(pokes_by_trial,rates)
+m8_rates<-rates
+
+mouse_8_bin_data_frame<-data.frame()
+mouse_8_bin_data_frame<-(do.call(cbind.na, mouse_8_bin))
+tsum<-as.data.frame(t(mouse_8_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m8<-data.frame(do.call(cbind.na, aggreg))
+
+j=8#mouse number
+
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes))){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+
+if(length(false_logic)==0 & length(all_pokes)>length(list_of_duration_w[[j]])){false_logic<-length(all_pokes)}
+
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+vector_of_indices<-vector()
+
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+
+
+
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+mouse_8_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+                    
+)
+
+
+j=9#mouse number
+
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+mouse_9<-list()
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_9[[i]]<-allpokes
+}
+
+
+time_count<-0
+mouse_9_bin<-list()
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_9)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_9[[j]]>= start_value+vector_1[i] & mouse_9[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_9_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m9_poke_n_rates<-rbind(pokes_by_trial,rates)
+m9_rates<-rates
+
+mouse_9_bin_data_frame<-data.frame()
+mouse_9_bin_data_frame<-(do.call(cbind.na, mouse_9_bin))
+tsum<-as.data.frame(t(mouse_9_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m9<-data.frame(do.call(cbind.na, aggreg))
+
+j=9#mouse number
+
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes))){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+
+if(length(false_logic)==0 & length(all_pokes)>length(list_of_duration_w[[j]])){false_logic<-length(all_pokes)}
+
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+mouse_9_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+                    
+)
+
+
+j=10#mouse number
+
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+mouse_10<-list()
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_10[[i]]<-allpokes
+}
+
+
+
+time_count<-0
+mouse_10_bin<-list()
+
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_10)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_10[[j]]>= start_value+vector_1[i] & mouse_10[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_10_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m10_poke_n_rates<-rbind(pokes_by_trial,rates)
+m10_rates<-rates
+
+mouse_10_bin_data_frame<-data.frame()
+mouse_10_bin_data_frame<-(do.call(cbind.na, mouse_10_bin))
+tsum<-as.data.frame(t(mouse_10_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m10<-data.frame(do.call(cbind.na, aggreg))
+
+j=10#mouse number
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes)-1)){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind[1]
+}
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1], na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind[1]
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1], na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices<-c(vector_of_indices,ind[1])
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1], na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+mouse_10_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+                    
+)
+
+
+j=11#mouse number
+
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+mouse_11<-list()
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_11[[i]]<-allpokes
+}
+
+
+time_count<-0
+mouse_11_bin<-list()
+
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_11)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_11[[j]]>= start_value+vector_1[i] & mouse_11[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_11_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m11_poke_n_rates<-rbind(pokes_by_trial,rates)
+m11_rates<-rates
+
+mouse_11_bin_data_frame<-data.frame()
+mouse_11_bin_data_frame<-(do.call(cbind.na, mouse_11_bin))
+tsum<-as.data.frame(t(mouse_11_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m11<-data.frame(do.call(cbind.na, aggreg))
+
+j=11#mouse number
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes))){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+
+if(length(false_logic)==0 & length(all_pokes)>length(list_of_duration_w[[j]])){false_logic<-length(all_pokes)}
+
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind[1]
+}
+
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+mouse_11_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+                    
+)
+
+
+j=12#mouse number
+
+all_pokes<-c(list_of_lighton_w[[j]], list_of_retrievals_w[[j]], list_of_lightoff_w[[j]])
+all_pokes<-sort(all_pokes, decreasing=FALSE)
+mouse_12<-list()
+
+for (i in 1:nrow(list_of_cues_w[[j]])){
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_12[[i]]<-allpokes
+}
+
+
+
+time_count<-0
+mouse_12_bin<-list()
+
+rate_pre<-vector()
+rate_during<-vector()
+rate_post<-vector()
+
+for(j in 1:length(mouse_12)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(mouse_12[[j]]>= start_value+vector_1[i] & mouse_12[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  rate_pre[j]<-sum(time_count[2:(lower_limit+1)])
+  rate_during[j]<-sum(time_count[(lower_limit+2):(lower_limit+1+(upper_limit-lower_limit))])
+  rate_post[j]<-sum(time_count[(lower_limit+2+(upper_limit-lower_limit)):(window_length+1)])
+  mouse_12_bin[[j]]<-time_count 
+  time_count<-0
+}
+
+pokes_by_trial<-cbind(rate_pre,rate_during,rate_post)
+rates<-c((sum(pokes_by_trial[,1])/minutes_pre), (sum(pokes_by_trial[,2])/minutes_during),(sum(pokes_by_trial[,3])/minutes_post))
+m12_poke_n_rates<-rbind(pokes_by_trial,rates)
+m12_rates<-rates
+
+j=12#mouse number
+false_logic<-vector()
+value_holder<-vector()
+
+for(i in 1:(length(all_pokes))){
+  if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+    value_holder<-i
+    false_logic<-c(false_logic,value_holder)}
+}
+
+if(length(false_logic)==0 & length(all_pokes)>length(list_of_duration_w[[j]])){false_logic<-length(all_pokes)}
+
+if(length(all_pokes)>length(list_of_duration_w[[j]])){
+  all_pokes<-all_pokes[-false_logic[1]]
+}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+
+mouse_12_bin_data_frame<-data.frame()
+mouse_12_bin_data_frame<-(do.call(cbind.na, mouse_12_bin))
+tsum<-as.data.frame(t(mouse_12_bin_data_frame))
+aggreg<-lapply(tsum,sum)
+m12<-data.frame(do.call(cbind.na, aggreg))
+
+
+poke_frame<-cbind(list_of_duration_w[[j]],all_pokes)
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lighton_w[[j]][,1])){
+  ind<-which(list_of_lighton_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+
+sum_duration_lighton<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lighton<-mean(poke_frame[vector_of_indices,1], na.rm=TRUE)
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_retrievals_w[[j]][,1])){
+  ind<-which(list_of_retrievals_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_retrievals<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_retrievals<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+vector_of_indices<-vector()
+for(i in 1:length(list_of_lightoff_w[[j]][,1])){
+  ind<-which(list_of_lightoff_w[[j]][i,1]==poke_frame[,2])
+  vector_of_indices[i]<-ind
+}
+sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1],na.rm=TRUE)
+mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
+
+
+mouse_12_duration<-c(sum_duration_lighton,
+                    mean_duration_lighton,
+                    sum_duration_retrievals,
+                    mean_duration_retrievals,
+                    sum_duration_lightoff,
+                    mean_duration_lightoff
+                    
+)
+
+
+
+rates_frame<-rbind(
+      m1_rates,
+      m2_rates,
+      m3_rates,
+      m4_rates,
+      m5_rates,
+      m6_rates,
+      m7_rates,
+      m8_rates,
+      m9_rates,
+      m10_rates,
+      m11_rates,
+      m12_rates)
+write.xlsx(rates_frame, file=paste(directory,'rates_of_all_mice.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
+
+
+rate_and_pokes<-data.frame(nrow=36,ncol=36)
+rate_and_pokes<-cbind(m1_poke_n_rates,
+m2_poke_n_rates,
+m3_poke_n_rates,
+m4_poke_n_rates,
+m5_poke_n_rates,
+m6_poke_n_rates,
+m7_poke_n_rates,
+m8_poke_n_rates,
+m9_poke_n_rates,
+m10_poke_n_rates,
+m11_poke_n_rates,
+m12_poke_n_rates
+)
+
+write.xlsx(rate_and_pokes, file=paste(directory,'rate_and_poke_.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
+
+duration_pokes<-rbind(mouse_1_duration,
+mouse_2_duration,
+mouse_3_duration,
+mouse_4_duration,
+mouse_5_duration,
+mouse_6_duration,
+mouse_7_duration,
+mouse_8_duration,
+mouse_9_duration,
+mouse_10_duration,
+mouse_11_duration,
+mouse_12_duration)
+duration_pokes<-cbind(duration_pokes,as.vector(duration_pokes[,1]+duration_pokes[,3]))
+colnames(duration_pokes)<-c("light_on","light_on_mean","retrieval","retrieval_mean","light_off","light_on_mean","light_on_sum")
+
+write.xlsx(duration_pokes, file=paste(directory,'duration_pokes.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
+
+
+
+
+
+
+
+
+master_list<-list()
+
+for (i in 1:length(mouse_5)){
+  master_vector<-c(mouse_1[[i]],
+                   mouse_2[[i]],
+                   mouse_3[[i]],
+                   mouse_4[[i]],
+                   mouse_5[[i]],
+                   mouse_6[[i]],
+                   mouse_7[[i]],
+                   mouse_8[[i]],
+                   mouse_9[[i]],
+                   mouse_10[[i]],
+                   mouse_11[[i]],
+                   mouse_12[[i]] )
+  
+  master_vector<-sort(master_vector, decreasing=FALSE)
+  master_list[[i]]<-master_vector
+  
+}
+
+vector_1<-seq(0:59)
+vector_1<-vector_1-1
+vector_2<-seq(0:59)
+time_count<-0
+master_bin<-list()
+for(j in 1:length(master_list)){
+  for (i in 1:length(vector_1)){
+    second_bin<-length(which(master_list[[j]]>= start_value+vector_1[i] & master_list[[j]]< start_value+vector_2[i]))
+    time_count<-c(time_count,second_bin)
+  }
+  master_bin[[j]]<-time_count 
+  time_count<-0
+}
+master_bin_data_frame<-data.frame()
+master_bin_data_frame<-data.frame(do.call(cbind.na, master_bin))
+
+write.xlsx(master_bin_data_frame, file=paste(directory,'by_trial_raster_binned.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
+
+allone<-rbind(m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12)
+write.xlsx(allone, file=paste(directory,'by_mouse_binned.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
+
+
+
+excel <- loadWorkbook(paste(directory,'B_TOTAL_COUNTS.xlsx',sep="")) # change to match your path
+# get sheet names
+sheet_names <- names(excel)
+names(sheet_names) <- sheet_names
+# put sheets into a list of data frames
+sheet_list <- lapply(sheet_names, function(.sheet){readWorkbook(excel, .sheet)})
+# limit sheet_list to sheets with at least 1 dimension 
+sheet_list2 <- sheet_list[sapply(sheet_list, function(x) dim(x)[1]) > 0]
+
+total_counts<-list()
+for (i in 1:length(sheet_names)){
+  df1<-as.data.frame(sheet_list2[[i]])
+  df1<-df1[-(1:3),]
+  df1<-df1[,3]
+  x<-as.numeric(as.matrix(df1))
+  # creating matrix 
+  length(x)
+  m <- matrix(x, nrow = length(x), byrow = FALSE,) 
+  
+  total_counts[[i]]<-m
+}
+master_counts<-data.frame(do.call(cbind.na, total_counts))
+row_names<-c("Sum_Correct_Incorrect","Correct Rsp","Incorrect Rsp","Rewards Presented",
+             "BLNK", "BLNK1", "Cue_Light_Pres","Retrievals","BLNK2",
+             "Omissions","Tone Presentations"," BLNK3")
+rownames(master_counts)<-row_names
+column_names<-c(1:12)
+colnames(master_counts)<-column_names
+write.xlsx(master_counts, file=paste(directory,'master_counts.xlsx', row.names=TRUE,sep="")) #******CHANGE BY ANIMAL**************###########
+write.xlsx(rates_on_off, file=paste(directory,'rates_ON_OFF.xlsx', col.names=TRUE, row.names=TRUE,sep="")) #******CHANGE BY ANIMAL**************###########
+
+#mouse_1
+#mouse_2
+#mouse_3
+#mouse_4
+#mouse_5
+#mouse_6
+#mouse_7
+#mouse_8
+#mouse_9
+#mouse_10
+#mouse_11
+#mouse_12
+
+
+######
+###### X axis parameters
+xlim_ll=-40
+xlim_ul=60
+
+### y axis parameters
+ylim_ll=0
+ylim_ul=30
+
+###### gray zone parameters
+stim_ll=0
+stim_ul=30
+
+j=1
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_1, 
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+
+j=2
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_2,
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+
+j=3
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_3, 
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+
+
+
+j=4
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_4, 
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+j=5
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_5, 
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+
+j=6
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_6, 
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+
+j=7
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_7, 
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+
+
+j=8
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_8, 
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+
+
+j=9
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_9, 
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+
+
+j=10
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_10, 
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+
+
+j=11
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_11, 
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+
+
+j=12
+png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+raster_plot(mouse_12, 
+            stimTimeCourse = c(stim_ll,stim_ul), 
+            colStim = "grey80",
+            xlim=c(xlim_ll,xlim_ul), 
+            ylim=c(ylim_ll,ylim_ul),
+            "l", 
+            xlab="Time",
+            ylab="Reward Trial", 
+            main=paste("Mouse",j))
+dev.off()  
+
+
+#value_holder<-vector()
+
+#for(i in 1:(length(all_pokes))){
+ # if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+ #   value_holder<-i
+  #  false_logic<-c(false_logic,value_holder)}
+#}
+#if(length(all_pokes)>length(list_of_duration_w[[j]])){
+#  all_pokes<-all_pokes[-false_logic[1]]
+#}else if(length(all_pokes)<length(list_of_duration_w[[j]])){
+#  list_of_duration_w[[j]]<-list_of_duration_w[[j]][-false_logic[1],1]}
+
+
+#FIX METHOD
+
+
