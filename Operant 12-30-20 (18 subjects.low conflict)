@@ -288,7 +288,7 @@ day=1
 day_x<- c("D1","D2","D3","D4","D5","D6")
 dayx=1
 
-directory=paste('Z:/Projects/NAcc Project/Platform Avoidance/Naive Cohort 2 sucrose as reinforcer/Cohort II sucrose PMA/',day_v[day], 'Low Con ITI',stage[stage_n], day_x[dayx], "/", sep="")
+directory=paste('M:/Projects/NAcc Project/Platform Avoidance/Naive Cohort 2 sucrose as reinforcer/Cohort II sucrose PMA/',day_v[day], 'Low Con ITI',stage[stage_n], day_x[dayx], "/", sep="")
 #Z:\Projects\NAcc Project\Platform Avoidance\Naive Cohort 2 sucrose as reinforcer\Cohort II sucrose PMA\D7 Low Con ITI 30 D1
 
 excel <- loadWorkbook(paste(directory,'H_CUES.xlsx',sep="")) # change to match your path
@@ -361,7 +361,7 @@ for (i in 1:length(sheet_list)){
   list_of_retrievals_w[[i]]<-m
 }
 
-
+list_of_retrievals_w[[6]]
 # load excel workbook
 excel <- loadWorkbook(paste(directory,'R_LIGHT_OFF.xlsx', sep="")) # change to match your path
 # get sheet names
@@ -443,8 +443,8 @@ list_of_duration_w
 rate_off<-vector()
 rate_on<-vector()
 for (j in 1:18){
-rate_off[j]<-length(list_of_lightoff_w[[j]])/34.5
-rate_on[j]<-(length(list_of_lighton_w[[j]])+length(list_of_retrievals_w[j]))/10
+  rate_off[j]<-length(list_of_lightoff_w[[j]])/34.5
+  rate_on[j]<-(length(list_of_lighton_w[[j]])+length(list_of_retrievals_w[j]))/10
 }
 rates_on_off<-cbind(rate_off,rate_on)
 
@@ -479,10 +479,10 @@ all_pokes<-sort(all_pokes, decreasing=FALSE)
 mouse_1<-list()
 
 for (i in 1:nrow(list_of_cues_w[[j]])){
-    relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
-    allpokes<-all_pokes[relative_to_cue_indx]
-    allpokes<-allpokes-list_of_cues_w[[j]][i,1]
-    mouse_1[[i]]<-allpokes
+  relative_to_cue_indx<-which(all_pokes>=list_of_cues_w[[j]][i,1]-lower_limit & all_pokes<list_of_cues_w[[j]][i,1]+upper_limit)
+  allpokes<-all_pokes[relative_to_cue_indx]
+  allpokes<-allpokes-list_of_cues_w[[j]][i,1]
+  mouse_1[[i]]<-allpokes
   
 }
 
@@ -1477,12 +1477,12 @@ sum_duration_lightoff<-sum(poke_frame[vector_of_indices,1], na.rm=TRUE)
 mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
 
 mouse_10_duration<-c(sum_duration_lighton,
-                    mean_duration_lighton,
-                    sum_duration_retrievals,
-                    mean_duration_retrievals,
-                    sum_duration_lightoff,
-                    mean_duration_lightoff
-                    
+                     mean_duration_lighton,
+                     sum_duration_retrievals,
+                     mean_duration_retrievals,
+                     sum_duration_lightoff,
+                     mean_duration_lightoff
+                     
 )
 
 
@@ -1577,12 +1577,12 @@ mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
 
 
 mouse_11_duration<-c(sum_duration_lighton,
-                    mean_duration_lighton,
-                    sum_duration_retrievals,
-                    mean_duration_retrievals,
-                    sum_duration_lightoff,
-                    mean_duration_lightoff
-                    
+                     mean_duration_lighton,
+                     sum_duration_retrievals,
+                     mean_duration_retrievals,
+                     sum_duration_lightoff,
+                     mean_duration_lightoff
+                     
 )
 
 
@@ -1679,12 +1679,12 @@ mean_duration_lightoff<-mean(poke_frame[vector_of_indices,1],na.rm=TRUE)
 
 
 mouse_12_duration<-c(sum_duration_lighton,
-                    mean_duration_lighton,
-                    sum_duration_retrievals,
-                    mean_duration_retrievals,
-                    sum_duration_lightoff,
-                    mean_duration_lightoff
-                    
+                     mean_duration_lighton,
+                     sum_duration_retrievals,
+                     mean_duration_retrievals,
+                     sum_duration_lightoff,
+                     mean_duration_lightoff
+                     
 )
 j=13#mouse number
 
@@ -2290,68 +2290,68 @@ mouse_18_duration<-c(sum_duration_lighton,
 
 
 rates_frame<-rbind(
-      m1_rates,
-      m2_rates,
-      m3_rates,
-      m4_rates,
-      m5_rates,
-      m6_rates,
-      m7_rates,
-      m8_rates,
-      m9_rates,
-      m10_rates,
-      m11_rates,
-      m12_rates,
-      m13_rates,
-      m14_rates,
-      m15_rates,
-      m16_rates,
-      m17_rates,
-      m18_rates)
+  m1_rates,
+  m2_rates,
+  m3_rates,
+  m4_rates,
+  m5_rates,
+  m6_rates,
+  m7_rates,
+  m8_rates,
+  m9_rates,
+  m10_rates,
+  m11_rates,
+  m12_rates,
+  m13_rates,
+  m14_rates,
+  m15_rates,
+  m16_rates,
+  m17_rates,
+  m18_rates)
 write.xlsx(rates_frame, file=paste(directory,'rates_of_all_mice.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 
 rate_and_pokes<-data.frame(nrow=36,ncol=36)
 rate_and_pokes<-cbind(m1_poke_n_rates,
-m2_poke_n_rates,
-m3_poke_n_rates,
-m4_poke_n_rates,
-m5_poke_n_rates,
-m6_poke_n_rates,
-m7_poke_n_rates,
-m8_poke_n_rates,
-m9_poke_n_rates,
-m10_poke_n_rates,
-m11_poke_n_rates,
-m12_poke_n_rates,
-m13_poke_n_rates,
-m14_poke_n_rates,
-m15_poke_n_rates,
-m16_poke_n_rates,
-m17_poke_n_rates,
-m18_poke_n_rates
+                      m2_poke_n_rates,
+                      m3_poke_n_rates,
+                      m4_poke_n_rates,
+                      m5_poke_n_rates,
+                      m6_poke_n_rates,
+                      m7_poke_n_rates,
+                      m8_poke_n_rates,
+                      m9_poke_n_rates,
+                      m10_poke_n_rates,
+                      m11_poke_n_rates,
+                      m12_poke_n_rates,
+                      m13_poke_n_rates,
+                      m14_poke_n_rates,
+                      m15_poke_n_rates,
+                      m16_poke_n_rates,
+                      m17_poke_n_rates,
+                      m18_poke_n_rates
 )
 
 write.xlsx(rate_and_pokes, file=paste(directory,'rate_and_poke_.xlsx',sep="")) #******CHANGE BY ANIMAL**************###########
 
 duration_pokes<-rbind(mouse_1_duration,
-mouse_2_duration,
-mouse_3_duration,
-mouse_4_duration,
-mouse_5_duration,
-mouse_6_duration,
-mouse_7_duration,
-mouse_8_duration,
-mouse_9_duration,
-mouse_10_duration,
-mouse_11_duration,
-mouse_12_duration,
-mouse_13_duration,
-mouse_14_duration,
-mouse_15_duration,
-mouse_16_duration,
-mouse_17_duration,
-mouse_18_duration)
+                      mouse_2_duration,
+                      mouse_3_duration,
+                      mouse_4_duration,
+                      mouse_5_duration,
+                      mouse_6_duration,
+                      mouse_7_duration,
+                      mouse_8_duration,
+                      mouse_9_duration,
+                      mouse_10_duration,
+                      mouse_11_duration,
+                      mouse_12_duration,
+                      mouse_13_duration,
+                      mouse_14_duration,
+                      mouse_15_duration,
+                      mouse_16_duration,
+                      mouse_17_duration,
+                      mouse_18_duration)
 duration_pokes<-cbind(duration_pokes,as.vector(duration_pokes[,1]+duration_pokes[,3]))
 colnames(duration_pokes)<-c("light_on","light_on_mean","retrieval","retrieval_mean","light_off","light_on_mean","light_on_sum")
 
@@ -2445,25 +2445,6 @@ colnames(master_counts)<-column_names
 write.xlsx(master_counts, file=paste(directory,'master_counts.xlsx', row.names=TRUE,sep="")) #******CHANGE BY ANIMAL**************###########
 write.xlsx(rates_on_off, file=paste(directory,'rates_ON_OFF.xlsx', col.names=TRUE, row.names=TRUE,sep="")) #******CHANGE BY ANIMAL**************###########
 
-#mouse_1
-#mouse_2
-#mouse_3
-#mouse_4
-#mouse_5
-#mouse_6
-#mouse_7
-#mouse_8
-#mouse_9
-#mouse_10
-#mouse_11
-#mouse_12
-#mouse_13
-#mouse_14
-#mouse_15
-#mouse_16
-#mouse_17
-#mouse_18
-
 
 ######
 ###### X axis parameters
@@ -2472,275 +2453,39 @@ xlim_ul=60
 
 ### y axis parameters
 ylim_ll=0
-ylim_ul=30
+ylim_ul=50
 
 ###### gray zone parameters
 stim_ll=0
 stim_ul=30
 
-j=1
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_1, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
+number_of_mice=18
+for (j in 1:number_of_mice){
+  tryCatch({
+    print(j)
+    png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
+    raster_plot(get(paste('mouse_',j,sep='')), 
+               stimTimeCourse = c(stim_ll,stim_ul), 
+               colStim = "grey80",
+               xlim=c(xlim_ll,xlim_ul), 
+               ylim=c(ylim_ll,ylim_ul),
+               "l", 
+               xlab="Time",
+               ylab="Reward Trial", 
+               main=paste("Mouse",j))
 
-
-j=2
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_2,
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-j=3
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_3, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-
-
-j=4
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_4, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-j=5
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_5, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-j=6
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_6, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-j=7
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_7, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-
-j=8
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_8, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-
-j=9
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_9, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-
-j=10
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_10, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-
-j=11
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_11, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-
-j=12
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_12, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-j=13
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_13, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-j=14
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_14, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-j=15
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_15, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-j=16
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_16, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-j=17
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_17, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
-
-
-j=18
-png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
-raster_plot(mouse_18, 
-            stimTimeCourse = c(stim_ll,stim_ul), 
-            colStim = "grey80",
-            xlim=c(xlim_ll,xlim_ul), 
-            ylim=c(ylim_ll,ylim_ul),
-            "l", 
-            xlab="Time",
-            ylab="Reward Trial", 
-            main=paste("Mouse",j))
-dev.off()  
+}, error=function(e){})
+dev.off()
+}
 
 
 
 #value_holder<-vector()
 
 #for(i in 1:(length(all_pokes))){
- # if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
- #   value_holder<-i
-  #  false_logic<-c(false_logic,value_holder)}
+# if((all_pokes[i]+list_of_duration_w[[j]][i,1])>=all_pokes[i+1]){
+#   value_holder<-i
+#  false_logic<-c(false_logic,value_holder)}
 #}
 #if(length(all_pokes)>length(list_of_duration_w[[j]])){
 #  all_pokes<-all_pokes[-false_logic[1]]
@@ -2749,5 +2494,3 @@ dev.off()
 
 
 #FIX METHOD
-
-
