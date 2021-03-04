@@ -282,13 +282,13 @@ library(STAR)
 library(openxlsx)
 
 stage<-c("30","60")
-stage_n=1
+stage_n=2
 day_v<- c("D7","D8","D9","D10","D11","D12","D13","D14","D15","D16","D17","D18")
-day=1
+day=8
 day_x<- c("D1","D2","D3","D4","D5","D6")
-dayx=1
+dayx=2
 
-directory=paste('M:/Projects/NAcc Project/Platform Avoidance/Naive Cohort 2 sucrose as reinforcer/Cohort II sucrose PMA/',day_v[day], 'Low Con ITI',stage[stage_n], day_x[dayx], "/", sep="")
+directory=paste('Z:/Projects/NAcc Project/Platform Avoidance/Naive Cohort 2 sucrose as reinforcer/Cohort II sucrose PMA/',day_v[day], 'Low Con ITI',stage[stage_n], day_x[dayx], "/", sep="")
 #Z:\Projects\NAcc Project\Platform Avoidance\Naive Cohort 2 sucrose as reinforcer\Cohort II sucrose PMA\D7 Low Con ITI 30 D1
 
 excel <- loadWorkbook(paste(directory,'H_CUES.xlsx',sep="")) # change to match your path
@@ -315,12 +315,13 @@ for (i in 1:length(sheet_names)){
 
 
 # load excel workbook
-excel <- loadWorkbook(paste(directory,'H_CUES.xlsx', sep="")) # change to match your path
+excel <- loadWorkbook(paste(directory,'F_LIGHT_ON.xlsx', sep="")) # change to match your path
 # get sheet names
 sheet_names <- names(excel)
 names(sheet_names) <- sheet_names
 # put sheets into a list of data frames
 sheet_list <- lapply(sheet_names, function(.sheet){readWorkbook(excel, .sheet)})
+
 # limit sheet_list to sheets with at least 1 dimension 
 sheet_list2 <- sheet_list[sapply(sheet_list, function(x) dim(x)[1]) > 0]
 
@@ -2098,7 +2099,7 @@ for (i in 1:nrow(list_of_cues_w[[j]])){
   allpokes<-allpokes-list_of_cues_w[[j]][i,1]
   mouse_17[[i]]<-allpokes
 }
-
+1920.02
 
 
 time_count<-0
@@ -2384,7 +2385,7 @@ for (i in 1:length(mouse_5)){
                    mouse_15[[i]],
                    mouse_16[[i]],
                    mouse_17[[i]],
-                   mouse_18[[i]]   )
+                   mouse_18[[i]])
   
   master_vector<-sort(master_vector, decreasing=FALSE)
   master_list[[i]]<-master_vector
@@ -2465,17 +2466,17 @@ for (j in 1:number_of_mice){
     print(j)
     png(file=paste(directory,"mouse_", j,".png",sep=""),width=600, height=400)
     raster_plot(get(paste('mouse_',j,sep='')), 
-               stimTimeCourse = c(stim_ll,stim_ul), 
-               colStim = "grey80",
-               xlim=c(xlim_ll,xlim_ul), 
-               ylim=c(ylim_ll,ylim_ul),
-               "l", 
-               xlab="Time",
-               ylab="Reward Trial", 
-               main=paste("Mouse",j))
-
-}, error=function(e){})
-dev.off()
+                stimTimeCourse = c(stim_ll,stim_ul), 
+                colStim = "grey80",
+                xlim=c(xlim_ll,xlim_ul), 
+                ylim=c(ylim_ll,ylim_ul),
+                "l", 
+                xlab="Time",
+                ylab="Reward Trial", 
+                main=paste("Mouse",j))
+    
+  }, error=function(e){})
+  dev.off()
 }
 
 
